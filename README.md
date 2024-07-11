@@ -1,6 +1,6 @@
 # YTU Chatbot
 
-![YTU Chatbot Logo](./img/YTU_Chatbot_Logo.webp)
+![YTU Chatbot Logo](./img/YTU_Chatbot_Logo2.webp)
 
 The YTU Chatbot is a pioneering project aimed at revolutionizing the way students interact with university websites. By integrating a custom chatbot using the latest advancements in Retrieval-Augmented Generation (RAG) and Large Language Models (LLMs), this project seeks to streamline the process of finding specific information, thereby enhancing the user experience and reducing the workload on administrative staff.
 
@@ -29,11 +29,11 @@ Our methodology revolves around the integration of RAG systems with LLMs to crea
 
 - **Sample RAG System Response 1**
 
-  ![Sample Response 1](table1-results.png)
+  ![Sample Response 1](./img/table1-results.png)
 
 - **Sample RAG System Response 2**
 
-  ![Sample Response 2](table2-results.png)
+  ![Sample Response 2](./img/table2-results.png)
 
 ## Conclusion
 
