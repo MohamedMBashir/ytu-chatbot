@@ -26,7 +26,7 @@ else:
     openai.api_key = os.environ['OPENAI_API_KEY']
 
 
-from logic import ytu_chatbot_chain
+from logic import ytu_chatbot_chain, CustomJSONEncoder
 
 # st.title("🌟 YTU Chatbot 🌟")
 st.markdown("<h1 style='text-align: center; color: white;'>🌟 YTU Chatbot 🌟</h1>", unsafe_allow_html=True)
@@ -54,11 +54,11 @@ if user_query:
     # Get response from the YTU Chatbot Chain
     try:
         input_dict = {"query": user_query}
-        st.write(f"DEBUG: Input to chain: {json.dumps(input_dict, indent=2)}")
+        st.write(f"DEBUG: Input to chain: {json.dumps(input_dict, indent=2, cls=CustomJSONEncoder)}")
         
         answer = ytu_chatbot_chain.invoke(input_dict)
         
-        st.write(f"DEBUG: Raw output from chain: {json.dumps(answer, indent=2)}")
+        st.write(f"DEBUG: Raw output from chain: {json.dumps(answer, indent=2, cls=CustomJSONEncoder)}")
         
         if isinstance(answer, dict):
             if 'result' in answer:
@@ -73,4 +73,4 @@ if user_query:
         st.error(f"An error occurred: {str(e)}")
         st.write(f"DEBUG: Error details: {repr(e)}")
         st.write(f"DEBUG: Traceback: {traceback.format_exc()}")
-        st.write(f"DEBUG: Chain type: {type(ytu_chatbot_chain)}")
+        st.write(f"DEBUG: Chain type: {type(ytu_chatbot_chain)}"
