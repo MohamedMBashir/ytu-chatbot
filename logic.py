@@ -11,6 +11,7 @@ from langchain.retrievers.document_compressors import (
     LLMChainFilter,
     DocumentCompressorPipeline,
 )
+import json
 
 # -------------
 import os
@@ -167,15 +168,49 @@ Classification:"""
 
 #-----------------------------------------------------
 
+# def route(info):
+#     if "erasmus" in info["topic"].lower():
+#         return erasmus_qa_chain
+#     elif "major" in info["topic"].lower():
+#         return end_qa_chain
+#     else:
+#         return ytu_qa_chain
+
+# #-----------------------------------------------------
+
+
+# ytu_chatbot_chain = {"topic": chain, "query": lambda x: x["query"]} | RunnableLambda(route)
+
+
+#------------------------- DEBUG CODE ----------------------------
+
 def route(info):
-    if "erasmus" in info["topic"].lower():
+    print(f"DEBUG: route function received: {json.dumps(info, indent=2)}")
+    if "erasmus" in info.get("topic", "").lower():
+        print("DEBUG: Routing to erasmus_qa_chain")
         return erasmus_qa_chain
-    elif "major" in info["topic"].lower():
+    elif "major" in info.get("topic", "").lower():
+        print("DEBUG: Routing to end_qa_chain")
         return end_qa_chain
     else:
+        print("DEBUG: Routing to ytu_qa_chain")
         return ytu_qa_chain
 
-#-----------------------------------------------------
+# Update the chain to use 'query' consistently and add debug prints
+ytu_chatbot_chain = (
+    {
+        "topic": lambda x: print(f"DEBUG: Topic input: {x}") or chain.invoke(x),
+        "query": lambda x: print(f"DEBUG: Query input: {x}") or x["query"]
+    }
+    | RunnableLambda(route)
+)
 
+# Wrap the chain with a debug function
+def debug_chain(input_dict):
+    print(f"DEBUG: Chain input: {json.dumps(input_dict, indent=2)}")
+    result = ytu_chatbot_chain.invoke(input_dict)
+    print(f"DEBUG: Chain output: {json.dumps(result, indent=2)}")
+    return result
 
-ytu_chatbot_chain = {"topic": chain, "query": lambda x: x["query"]} | RunnableLambda(route)
+# Replace ytu_chatbot_chain with the debug version
+ytu_chatbot_chain = debug_chain
