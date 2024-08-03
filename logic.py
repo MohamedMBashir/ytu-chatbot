@@ -16,6 +16,8 @@ import json
 from langchain.chains.base import Chain
 from typing import Dict, Any, List
 from langchain.pydantic_v1 import Field
+from langchain.schema import BaseLanguageModel
+
 # ------------------------------
 
 # -------------
@@ -210,41 +212,21 @@ base_chain = (
     | RunnableLambda(route)
 )
 
-# Create a debug wrapper chain
-class DebugChain(Chain):
-    base_chain: Chain = Field(exclude=True)
-    
-    class Config:
-        arbitrary_types_allowed = True
+class DebugWrapper:
+    def __init__(self, base_chain):
+        self.base_chain = base_chain
 
-    @property
-    def input_keys(self) -> List[str]:
-        return self.base_chain.input_keys
-
-    @property
-    def output_keys(self) -> List[str]:
-        return self.base_chain.output_keys
-
-    def _call(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    def invoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         print(f"DEBUG: Chain input: {json.dumps(inputs, indent=2)}")
         result = self.base_chain.invoke(inputs)
         print(f"DEBUG: Chain output: {json.dumps(result, indent=2)}")
         return result
 
-    async def _acall(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    async def ainvoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         print(f"DEBUG: Chain input: {json.dumps(inputs, indent=2)}")
         result = await self.base_chain.ainvoke(inputs)
         print(f"DEBUG: Chain output: {json.dumps(result, indent=2)}")
         return result
 
-# Create the base chain
-base_chain = (
-    {
-        "topic": lambda x: print(f"DEBUG: Topic input: {x}") or chain.invoke(x),
-        "query": lambda x: print(f"DEBUG: Query input: {x}") or x["query"]
-    }
-    | RunnableLambda(route)
-)
-
-# Wrap the base chain with the debug chain
-ytu_chatbot_chain = DebugChain(base_chain=base_chain)
+# Wrap the base chain with the debug wrapper
+ytu_chatbot_chain = DebugWrapper(base_chain)
