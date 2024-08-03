@@ -11,7 +11,11 @@ from langchain.retrievers.document_compressors import (
     LLMChainFilter,
     DocumentCompressorPipeline,
 )
+# debug imports -----------------
 import json
+from langchain.chains.base import Chain
+from typing import Dict, Any
+# ------------------------------
 
 # -------------
 import os
@@ -196,8 +200,8 @@ def route(info):
         print("DEBUG: Routing to ytu_qa_chain")
         return ytu_qa_chain
 
-# Update the chain to use 'query' consistently and add debug prints
-ytu_chatbot_chain = (
+# Create the base chain
+base_chain = (
     {
         "topic": lambda x: print(f"DEBUG: Topic input: {x}") or chain.invoke(x),
         "query": lambda x: print(f"DEBUG: Query input: {x}") or x["query"]
@@ -205,12 +209,29 @@ ytu_chatbot_chain = (
     | RunnableLambda(route)
 )
 
-# Wrap the chain with a debug function
-def debug_chain(input_dict):
-    print(f"DEBUG: Chain input: {json.dumps(input_dict, indent=2)}")
-    result = ytu_chatbot_chain.invoke(input_dict)
-    print(f"DEBUG: Chain output: {json.dumps(result, indent=2)}")
-    return result
+# Create a debug wrapper chain
+class DebugChain(Chain):
+    base_chain: Chain
+    
+    @property
+    def input_keys(self) -> List[str]:
+        return ["query"]
+    
+    @property
+    def output_keys(self) -> List[str]:
+        return ["result"]
 
-# Replace ytu_chatbot_chain with the debug version
-ytu_chatbot_chain = debug_chain
+    def _call(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+        print(f"DEBUG: Chain input: {json.dumps(inputs, indent=2)}")
+        result = self.base_chain.invoke(inputs)
+        print(f"DEBUG: Chain output: {json.dumps(result, indent=2)}")
+        return result
+
+    async def _acall(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+        print(f"DEBUG: Chain input: {json.dumps(inputs, indent=2)}")
+        result = await self.base_chain.ainvoke(inputs)
+        print(f"DEBUG: Chain output: {json.dumps(result, indent=2)}")
+        return result
+
+# Wrap the base chain with the debug chain
+ytu_chatbot_chain = DebugChain(base_chain=base_chain)
