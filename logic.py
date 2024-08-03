@@ -192,22 +192,25 @@ Classification:"""
 
 def route(info):
     print(f"DEBUG: route function received: {json.dumps(info, indent=2)}")
+    query = info.get("query", "")
     if "erasmus" in info.get("topic", "").lower():
         print("DEBUG: Routing to erasmus_qa_chain")
-        return erasmus_qa_chain
+        return erasmus_qa_chain.invoke({"query": query})
     elif "major" in info.get("topic", "").lower():
         print("DEBUG: Routing to end_qa_chain")
-        return end_qa_chain
+        return end_qa_chain.invoke({"query": query})
     else:
         print("DEBUG: Routing to ytu_qa_chain")
-        return ytu_qa_chain
+        return ytu_qa_chain.invoke({"query": query})
 
 # Create the base chain
+def process_input(x):
+    print(f"DEBUG: process_input received: {json.dumps(x, indent=2)}")
+    topic = chain.invoke(x)
+    return {"topic": topic, "query": x["query"]}
+
 base_chain = (
-    {
-        "topic": lambda x: print(f"DEBUG: Topic input: {x}") or chain.invoke(x),
-        "query": lambda x: print(f"DEBUG: Query input: {x}") or x["query"]
-    }
+    RunnableLambda(process_input)
     | RunnableLambda(route)
 )
 
@@ -216,15 +219,15 @@ class DebugWrapper:
         self.base_chain = base_chain
 
     def invoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        print(f"DEBUG: Chain input: {json.dumps(inputs, indent=2)}")
+        print(f"DEBUG: DebugWrapper.invoke input: {json.dumps(inputs, indent=2)}")
         result = self.base_chain.invoke(inputs)
-        print(f"DEBUG: Chain output: {json.dumps(result, indent=2)}")
+        print(f"DEBUG: DebugWrapper.invoke output: {json.dumps(result, indent=2)}")
         return result
 
     async def ainvoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        print(f"DEBUG: Chain input: {json.dumps(inputs, indent=2)}")
+        print(f"DEBUG: DebugWrapper.ainvoke input: {json.dumps(inputs, indent=2)}")
         result = await self.base_chain.ainvoke(inputs)
-        print(f"DEBUG: Chain output: {json.dumps(result, indent=2)}")
+        print(f"DEBUG: DebugWrapper.ainvoke output: {json.dumps(result, indent=2)}")
         return result
 
 # Wrap the base chain with the debug wrapper
