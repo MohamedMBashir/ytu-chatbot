@@ -17,6 +17,7 @@ from langchain.chains.base import Chain
 from typing import Dict, Any, List
 from langchain.pydantic_v1 import Field
 from langchain.base_language import BaseLanguageModel
+from json import JSONEncoder
 # ------------------------------
 
 # -------------
@@ -190,28 +191,31 @@ Classification:"""
 
 #------------------------- DEBUG CODE ----------------------------
 
+class CustomJSONEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, DebugWrapper):
+            return f"<DebugWrapper: {obj.name}>"
+        return super().default(obj)
+
 class DebugWrapper:
     def __init__(self, base_chain, name):
         self.base_chain = base_chain
         self.name = name
 
     def invoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        print(f"DEBUG: {self.name}.invoke input: {json.dumps(inputs, indent=2)}")
+        print(f"DEBUG: {self.name}.invoke input: {json.dumps(inputs, indent=2, cls=CustomJSONEncoder)}")
         try:
             result = self.base_chain.invoke(inputs)
-            print(f"DEBUG: {self.name}.invoke output: {json.dumps(result, indent=2)}")
+            print(f"DEBUG: {self.name}.invoke output: {json.dumps(result, indent=2, cls=CustomJSONEncoder)}")
             return result
         except Exception as e:
             print(f"DEBUG: Error in {self.name}.invoke: {str(e)}")
             raise
 
-# Wrap each QA chain with a debug wrapper
-erasmus_qa_chain = DebugWrapper(erasmus_qa_chain, "erasmus_qa_chain")
-end_qa_chain = DebugWrapper(end_qa_chain, "end_qa_chain")
-ytu_qa_chain = DebugWrapper(ytu_qa_chain, "ytu_qa_chain")
+# ... (rest of the code remains the same)
 
 def route(info):
-    print(f"DEBUG: route function received: {json.dumps(info, indent=2)}")
+    print(f"DEBUG: route function received: {json.dumps(info, indent=2, cls=CustomJSONEncoder)}")
     query = info.get("query", "")
     if "erasmus" in info.get("topic", "").lower():
         print("DEBUG: Routing to erasmus_qa_chain")
@@ -224,30 +228,20 @@ def route(info):
         return {"query": query, "chain": ytu_qa_chain}
 
 def execute_chain(info):
-    print(f"DEBUG: execute_chain received: {json.dumps(info, indent=2)}")
+    print(f"DEBUG: execute_chain received: {json.dumps(info, indent=2, cls=CustomJSONEncoder)}")
     return info["chain"].invoke({"query": info["query"]})
 
-# Create the base chain
-def process_input(x):
-    print(f"DEBUG: process_input received: {json.dumps(x, indent=2)}")
-    topic = chain.invoke(x)
-    return {"topic": topic, "query": x["query"]}
-
-base_chain = (
-    RunnableLambda(process_input)
-    | RunnableLambda(route)
-    | RunnableLambda(execute_chain)
-)
+# ... (rest of the code remains the same)
 
 class MainDebugWrapper:
     def __init__(self, base_chain):
         self.base_chain = base_chain
 
     def invoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        print(f"DEBUG: MainDebugWrapper.invoke input: {json.dumps(inputs, indent=2)}")
+        print(f"DEBUG: MainDebugWrapper.invoke input: {json.dumps(inputs, indent=2, cls=CustomJSONEncoder)}")
         try:
             result = self.base_chain.invoke(inputs)
-            print(f"DEBUG: MainDebugWrapper.invoke output: {json.dumps(result, indent=2)}")
+            print(f"DEBUG: MainDebugWrapper.invoke output: {json.dumps(result, indent=2, cls=CustomJSONEncoder)}")
             return result
         except Exception as e:
             print(f"DEBUG: Error in MainDebugWrapper.invoke: {str(e)}")
