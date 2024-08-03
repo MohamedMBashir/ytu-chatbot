@@ -190,18 +190,42 @@ Classification:"""
 
 #------------------------- DEBUG CODE ----------------------------
 
+class DebugWrapper:
+    def __init__(self, base_chain, name):
+        self.base_chain = base_chain
+        self.name = name
+
+    def invoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+        print(f"DEBUG: {self.name}.invoke input: {json.dumps(inputs, indent=2)}")
+        try:
+            result = self.base_chain.invoke(inputs)
+            print(f"DEBUG: {self.name}.invoke output: {json.dumps(result, indent=2)}")
+            return result
+        except Exception as e:
+            print(f"DEBUG: Error in {self.name}.invoke: {str(e)}")
+            raise
+
+# Wrap each QA chain with a debug wrapper
+erasmus_qa_chain = DebugWrapper(erasmus_qa_chain, "erasmus_qa_chain")
+end_qa_chain = DebugWrapper(end_qa_chain, "end_qa_chain")
+ytu_qa_chain = DebugWrapper(ytu_qa_chain, "ytu_qa_chain")
+
 def route(info):
     print(f"DEBUG: route function received: {json.dumps(info, indent=2)}")
     query = info.get("query", "")
     if "erasmus" in info.get("topic", "").lower():
         print("DEBUG: Routing to erasmus_qa_chain")
-        return erasmus_qa_chain.invoke({"query": query})
+        return {"query": query, "chain": erasmus_qa_chain}
     elif "major" in info.get("topic", "").lower():
         print("DEBUG: Routing to end_qa_chain")
-        return end_qa_chain.invoke({"query": query})
+        return {"query": query, "chain": end_qa_chain}
     else:
         print("DEBUG: Routing to ytu_qa_chain")
-        return ytu_qa_chain.invoke({"query": query})
+        return {"query": query, "chain": ytu_qa_chain}
+
+def execute_chain(info):
+    print(f"DEBUG: execute_chain received: {json.dumps(info, indent=2)}")
+    return info["chain"].invoke({"query": info["query"]})
 
 # Create the base chain
 def process_input(x):
@@ -212,23 +236,22 @@ def process_input(x):
 base_chain = (
     RunnableLambda(process_input)
     | RunnableLambda(route)
+    | RunnableLambda(execute_chain)
 )
 
-class DebugWrapper:
+class MainDebugWrapper:
     def __init__(self, base_chain):
         self.base_chain = base_chain
 
     def invoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        print(f"DEBUG: DebugWrapper.invoke input: {json.dumps(inputs, indent=2)}")
-        result = self.base_chain.invoke(inputs)
-        print(f"DEBUG: DebugWrapper.invoke output: {json.dumps(result, indent=2)}")
-        return result
+        print(f"DEBUG: MainDebugWrapper.invoke input: {json.dumps(inputs, indent=2)}")
+        try:
+            result = self.base_chain.invoke(inputs)
+            print(f"DEBUG: MainDebugWrapper.invoke output: {json.dumps(result, indent=2)}")
+            return result
+        except Exception as e:
+            print(f"DEBUG: Error in MainDebugWrapper.invoke: {str(e)}")
+            raise
 
-    async def ainvoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        print(f"DEBUG: DebugWrapper.ainvoke input: {json.dumps(inputs, indent=2)}")
-        result = await self.base_chain.ainvoke(inputs)
-        print(f"DEBUG: DebugWrapper.ainvoke output: {json.dumps(result, indent=2)}")
-        return result
-
-# Wrap the base chain with the debug wrapper
-ytu_chatbot_chain = DebugWrapper(base_chain)
+# Wrap the base chain with the main debug wrapper
+ytu_chatbot_chain = MainDebugWrapper(base_chain)
