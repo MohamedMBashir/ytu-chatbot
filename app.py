@@ -73,4 +73,4 @@ if user_query:
         st.error(f"An error occurred: {str(e)}")
         st.write(f"DEBUG: Error details: {repr(e)}")
         st.write(f"DEBUG: Traceback: {traceback.format_exc()}")
-        st.write(f"DEBUG: Chain type: {type(ytu_chatbot_chain)}"
+        st.write(f"DEBUG: Chain type: {type(ytu_chatbot_chain)}")
