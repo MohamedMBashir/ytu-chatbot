@@ -15,6 +15,7 @@ from langchain.retrievers.document_compressors import (
 import json
 from langchain.chains.base import Chain
 from typing import Dict, Any, List
+from langchain.pydantic_v1 import Field
 # ------------------------------
 
 # -------------
@@ -211,15 +212,18 @@ base_chain = (
 
 # Create a debug wrapper chain
 class DebugChain(Chain):
-    base_chain: Chain
+    base_chain: Chain = Field(exclude=True)
     
+    class Config:
+        arbitrary_types_allowed = True
+
     @property
     def input_keys(self) -> List[str]:
-        return ["query"]
-    
+        return self.base_chain.input_keys
+
     @property
     def output_keys(self) -> List[str]:
-        return ["result"]
+        return self.base_chain.output_keys
 
     def _call(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         print(f"DEBUG: Chain input: {json.dumps(inputs, indent=2)}")
@@ -232,6 +236,15 @@ class DebugChain(Chain):
         result = await self.base_chain.ainvoke(inputs)
         print(f"DEBUG: Chain output: {json.dumps(result, indent=2)}")
         return result
+
+# Create the base chain
+base_chain = (
+    {
+        "topic": lambda x: print(f"DEBUG: Topic input: {x}") or chain.invoke(x),
+        "query": lambda x: print(f"DEBUG: Query input: {x}") or x["query"]
+    }
+    | RunnableLambda(route)
+)
 
 # Wrap the base chain with the debug chain
 ytu_chatbot_chain = DebugChain(base_chain=base_chain)
