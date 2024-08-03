@@ -3,6 +3,7 @@ import os
 import openai
 from dotenv import load_dotenv, find_dotenv
 import json
+import traceback
 
 # from dotenv import load_dotenv, find_dotenv
 try:
@@ -71,8 +72,5 @@ if user_query:
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
         st.write(f"DEBUG: Error details: {repr(e)}")
+        st.write(f"DEBUG: Traceback: {traceback.format_exc()}")
         st.write(f"DEBUG: Chain type: {type(ytu_chatbot_chain)}")
-    except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
-        st.write(f"DEBUG: Error details: {repr(e)}")
-        st.write(f"DEBUG: Chain type: {type(st.session_state['ytu_chatbot_chain'])}")
