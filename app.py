@@ -59,11 +59,15 @@ if user_query:
         
         st.write(f"DEBUG: Raw output from chain: {json.dumps(answer, indent=2)}")
         
-        if isinstance(answer, dict) and 'result' in answer:
-            st.text_area("Response:", value=answer['result'], height=200)
+        if isinstance(answer, dict):
+            if 'result' in answer:
+                st.text_area("Response:", value=answer['result'], height=200)
+            elif 'answer' in answer:
+                st.text_area("Response:", value=answer['answer'], height=200)
+            else:
+                st.text_area("Response:", value=str(answer), height=200)
         else:
-            st.error("Unexpected response format from the chain.")
-            st.write(f"DEBUG: Unexpected answer format: {type(answer)}")
+            st.text_area("Response:", value=str(answer), height=200)
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
         st.write(f"DEBUG: Error details: {repr(e)}")
