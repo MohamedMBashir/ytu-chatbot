@@ -16,8 +16,7 @@ import json
 from langchain.chains.base import Chain
 from typing import Dict, Any, List
 from langchain.pydantic_v1 import Field
-from langchain.schema import BaseLanguageModel
-
+from langchain.base_language import BaseLanguageModel
 # ------------------------------
 
 # -------------
