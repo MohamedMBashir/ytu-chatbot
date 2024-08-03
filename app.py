@@ -40,5 +40,5 @@ user_query = st.text_input("Soru:", key="user_query")
 if user_query:
     # Get response from the YTU Chatbot Chain
     print( user_query )
-    answer = st.session_state['ytu_chatbot_chain'].invoke({"question": user_query})
+    answer = st.session_state['ytu_chatbot_chain'].invoke({"query": user_query})
     st.text_area("Response:", value=answer['result'], height=200)
