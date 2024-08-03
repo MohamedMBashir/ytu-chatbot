@@ -55,7 +55,7 @@ if user_query:
         input_dict = {"query": user_query}
         st.write(f"DEBUG: Input to chain: {json.dumps(input_dict, indent=2)}")
         
-        answer = st.session_state['ytu_chatbot_chain'](input_dict)
+        answer = st.session_state['ytu_chatbot_chain'].invoke(input_dict)
         
         st.write(f"DEBUG: Raw output from chain: {json.dumps(answer, indent=2)}")
         
@@ -63,6 +63,8 @@ if user_query:
             st.text_area("Response:", value=answer['result'], height=200)
         else:
             st.error("Unexpected response format from the chain.")
+            st.write(f"DEBUG: Unexpected answer format: {type(answer)}")
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
         st.write(f"DEBUG: Error details: {repr(e)}")
+        st.write(f"DEBUG: Chain type: {type(st.session_state['ytu_chatbot_chain'])}")
