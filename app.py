@@ -34,11 +34,35 @@ st.markdown("<h1 style='text-align: center; color: white;'>🌟 YTU Chatbot 🌟
 if 'ytu_chatbot_chain' not in st.session_state:
     st.session_state['ytu_chatbot_chain'] = ytu_chatbot_chain
 
+# # Main chat interface
+# user_query = st.text_input("Soru:", key="user_query")
+
+# if user_query:
+#     # Get response from the YTU Chatbot Chain
+#     print( user_query )
+#     answer = st.session_state['ytu_chatbot_chain'].invoke({"query": user_query})
+#     st.text_area("Response:", value=answer['result'], height=200)
+
+# ------------------- DEBUG CODE ----------------------------------------
 # Main chat interface
 user_query = st.text_input("Soru:", key="user_query")
 
 if user_query:
+    st.write(f"DEBUG: User input: {user_query}")
+    
     # Get response from the YTU Chatbot Chain
-    print( user_query )
-    answer = st.session_state['ytu_chatbot_chain'].invoke({"query": user_query})
-    st.text_area("Response:", value=answer['result'], height=200)
+    try:
+        input_dict = {"query": user_query}
+        st.write(f"DEBUG: Input to chain: {json.dumps(input_dict, indent=2)}")
+        
+        answer = st.session_state['ytu_chatbot_chain'](input_dict)
+        
+        st.write(f"DEBUG: Raw output from chain: {json.dumps(answer, indent=2)}")
+        
+        if isinstance(answer, dict) and 'result' in answer:
+            st.text_area("Response:", value=answer['result'], height=200)
+        else:
+            st.error("Unexpected response format from the chain.")
+    except Exception as e:
+        st.error(f"An error occurred: {str(e)}")
+        st.write(f"DEBUG: Error details: {repr(e)}")
