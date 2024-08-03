@@ -62,7 +62,7 @@ Use the following pieces of context to answer the question at the end. \
 If you don't know the answer, just say that you don't know,\
 don't try to make up an answer. Give a detailed answer.
 {context}
-Question: {question}
+Question: {query}
 Helpful Answer:""")
 
 end_template = PromptTemplate.from_template(
@@ -79,7 +79,7 @@ Use the following pieces of context to answer the question at the end. \
 If you don't know the answer, just say that you don't know,\
 don't try to make up an answer. 
 {context}
-Question: {question}
+Question: {query}
 Helpful Answer:""")
 
 ytu_template = PromptTemplate.from_template(
@@ -96,7 +96,7 @@ Use the following pieces of context to answer the question at the end. \
 If you don't know the answer, just say that you don't know,\
 don't try to make up an answer. Give a detailed answer. 
 {context}
-Question: {question}
+Question: {query}
 Helpful Answer:""")
 
 
@@ -152,7 +152,7 @@ chain = (
 Do not respond with more than one word.
 
 <question>
-{question}
+{query}
 </question>
 
 Classification:"""
@@ -178,4 +178,4 @@ def route(info):
 #-----------------------------------------------------
 
 
-ytu_chatbot_chain = {"topic": chain, "question": lambda x: x["question"]} | RunnableLambda(route)
+ytu_chatbot_chain = {"topic": chain, "query": lambda x: x["query"]} | RunnableLambda(route)
