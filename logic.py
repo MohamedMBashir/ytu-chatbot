@@ -212,7 +212,15 @@ class DebugWrapper:
             print(f"DEBUG: Error in {self.name}.invoke: {str(e)}")
             raise
 
-# ... (rest of the code remains the same)
+# Assume these are defined earlier in your code
+# erasmus_qa_chain = ...
+# end_qa_chain = ...
+# ytu_qa_chain = ...
+
+# Wrap each QA chain with a debug wrapper
+erasmus_qa_chain = DebugWrapper(erasmus_qa_chain, "erasmus_qa_chain")
+end_qa_chain = DebugWrapper(end_qa_chain, "end_qa_chain")
+ytu_qa_chain = DebugWrapper(ytu_qa_chain, "ytu_qa_chain")
 
 def route(info):
     print(f"DEBUG: route function received: {json.dumps(info, indent=2, cls=CustomJSONEncoder)}")
@@ -231,7 +239,20 @@ def execute_chain(info):
     print(f"DEBUG: execute_chain received: {json.dumps(info, indent=2, cls=CustomJSONEncoder)}")
     return info["chain"].invoke({"query": info["query"]})
 
-# ... (rest of the code remains the same)
+# Assume this is defined earlier in your code
+# chain = ...
+
+def process_input(x):
+    print(f"DEBUG: process_input received: {json.dumps(x, indent=2, cls=CustomJSONEncoder)}")
+    topic = chain.invoke(x)
+    return {"topic": topic, "query": x["query"]}
+
+# Create the base chain
+base_chain = (
+    RunnableLambda(process_input)
+    | RunnableLambda(route)
+    | RunnableLambda(execute_chain)
+)
 
 class MainDebugWrapper:
     def __init__(self, base_chain):
