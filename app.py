@@ -2,7 +2,7 @@ import streamlit as st
 import os
 import openai
 from dotenv import load_dotenv, find_dotenv
-
+import json
 
 # from dotenv import load_dotenv, find_dotenv
 try:
