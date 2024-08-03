@@ -178,4 +178,4 @@ def route(info):
 #-----------------------------------------------------
 
 
-ytu_chatbot_chain = {"topic": chain, "query": lambda x: x["query"]} | RunnableLambda(route)
+ytu_chatbot_chain = {"topic": chain, "question": lambda x: x["question"]} | RunnableLambda(route)
