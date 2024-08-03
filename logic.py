@@ -14,7 +14,7 @@ from langchain.retrievers.document_compressors import (
 # debug imports -----------------
 import json
 from langchain.chains.base import Chain
-from typing import Dict, Any
+from typing import Dict, Any, List
 # ------------------------------
 
 # -------------
